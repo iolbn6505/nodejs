@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name=”viewport” content="width=device-width, initial-scale=1.0">
+    <style>
+        .box1 {
+            height: 80px;
+        }
+    </style>
+    <meta charset="utf-8">
+    <script
+         src="socket.io/socket.io.js">
+    </script> 
+    <style>
+        .f{
+            width:800px;
+            float:left;
+        }
+        .clear_fix{
+            height: 0;
+            clear: both;
+            line-height: 0;
+            font-size: 0;
+        }
+        .blink{
+            width:800px;
+            float:left;
+            animation-duration: 0.3s;
+            animation-name: blink;
+            animation-iteration-count: infinite;
+        }
+        .blinkpng {
+            animation-duration: 0.2s;
+            animation-name: blinkpng;
+            animation-iteration-count: infinite;
+        }
+        .light{
+            animation-name: light;
+            animation-duration: 1s;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+        }
+        #myBtn {
+            display: none; /* Hidden by default */
+            position: fixed; /* Fixed/sticky position */
+            bottom: 20px; /* Place the button at the bottom of the page */
+            right: 30px; /* Place the button 30px from the right */
+            z-index: 99; /* Make sure it does not overlap */
+            border: none; /* Remove borders */
+            outline: none; /* Remove outline */
+            background-color: rgb(46, 32, 32); /* Set a background color */
+            color: white; /* Text color */
+            cursor: pointer; /* Add a mouse pointer on hover */
+            padding: 15px; /* Some padding */
+            border-radius: 10px; /* Rounded corners */
+            font-size: 18px; /* Increase font size */
+        }
+
+        #myBtn:hover {
+            background-color: #555; /* Add a dark-grey background on hover */
+        }
+  
+        @keyframes blink {
+            0%  { color: blue;}
+            50% { color: red; }
+        }
+        @keyframes light{
+            from{
+                opacity: 1;
+            }
+            to{
+                opacity: 0.2;
+            }
+        }  
+        @keyframes blinkpng {
+            from{
+                opacity:.0.8;
+            }
+            to{
+                opacity:0;
+            }
+        }   
+     </style>
+
+     <style>
+        .text{
+            font-size:15px; 
+            color:rgb(22, 22, 22); 
+            padding:0.5em;
+        }
+     </style>
+</head>
+
+<body><div class="box1">
+    <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+    <script>
+        // Get the button:
+        let mybutton = document.getElementById("myBtn");
+
+        // When the user scrolls down 20px from the top of the document, show the button
+        window.onscroll = function() {scrollFunction()};
+
+        function scrollFunction() {
+        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            mybutton.style.display = "block";
+        } else {
+            mybutton.style.display = "none";
+        }
+        }
+
+        // When the user clicks on the button, scroll to the top of the document
+        function topFunction() {
+        document.body.scrollTop = 0; // For Safari
+        document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+        }
+    </script>
+
+
+    <div style="text-align:center;"><h1>電子瞭望員-監看</h1></div>
+    <HR>
+    <div><h3>RTC內部測試用(Group999)</h3></div>
+    <script>
+        var socket = io.connect();
+        var WS;
+        var track_blink;
+        socket.on('WS_999', function(data) {
+            WS=`${data.message}`;
+        });
+        socket.on('mqtt_999', function(data) {
+            //console.log(data.message);
+            var pack=document.getElementById("device");
+            if(WS==0){
+                pack.textContent=document.getElementById('pack_999_s').innerText = `${data.message}`;
+                document.getElementById('pack_999_s').innerText = `${data.message}`;
+            }
+            else{
+                pack.textContent=document.getElementById('pack_999_w').innerText = `${data.message}`;
+                document.getElementById('pack_999_w').innerText = `${data.message}`;
+            }
+
+        });
+        socket.on('time_999', function(data) {
+            if(WS==0){
+                var time=document.getElementById('time_999_s');
+                time.innerText = `${data.message}`;
+            }
+            else{
+                var time=document.getElementById('time_999_w');
+                time.innerText = `${data.message}`;
+            }
+        });
+        socket.on('DATA_2_999', function(data) {
+            //console.log(data.message);
+            if(WS==0){
+                document.getElementById('DATA_2_999_s').innerText = `${data.message}`;
+            }
+            else{
+                document.getElementById('DATA_2_999_w').innerText = `${data.message}`;
+            } 
+        });
+        socket.on('TrainPass_999', function(data) {
+            if(WS==0){
+                var trainpass=document.getElementById('TrainPass_999_s');
+                if(data.message==1){
+                    trainpass.innerText =`物體通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無物體通過`;
+                    trainpass.className="f";
+                    track_blink=0;
+                }
+            }
+            else{
+                var trainpass=document.getElementById('TrainPass_999_w');
+                if(data.message==1){
+                    trainpass.innerText =`物體通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無物體通過`;
+                    trainpass.className="f";
+                    track_blink=0;
+                }
+            }          
+        });
+        socket.on('TRACK0_1_999', function(data) {
+            if(WS==0){
+                if(data.message==1){
+                    document.getElementById('TRACK0_1_999_s').innerText = `遠軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_1_png_999_s').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_1_png_999_s').className="";
+                    }   
+                }  
+                else if(data.message==0){
+                    document.getElementById('TRACK0_1_999_s').innerText = `近軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_0_png_999_s').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_0_png_999_s').className="";
+                    }  
+                } 
+            }
+            else{
+                if(data.message==1){
+                    document.getElementById('TRACK0_1_999_w').innerText = `遠軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_1_png_999_w').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_1_png_999_w').className="";
+                    }  
+                }  
+                else if(data.message==0){
+                    document.getElementById('TRACK0_1_999_w').innerText = `近軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_0_png_999_w').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_0_png_999_w').className="";
+                    }  
+                } 
+            }    
+        });
+        socket.on('ALARM_999', function(data) {
+
+            if(WS==0){
+                var trainpass=document.getElementById('ALARM_999_s');
+                if(data.message==1){
+                    trainpass.innerText =`列車通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無列車通過`;
+                    track_blink=0;
+                    trainpass.className="f";
+                }
+            }
+            else{
+                var trainpass=document.getElementById('ALARM_999_w');
+                if(data.message==1){
+                    trainpass.innerText =`列車通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無列車通過`;
+                    track_blink=0;
+                    trainpass.className="f";
+                }
+            } 
+        });
+    </script>
+        <div id="TRACK_0_png_999_s" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="近軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:1000px;
+                  top:200px;">   
+         </div>
+         <div id="TRACK_1_png_999_s" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="近軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:1100px;
+                  top:200px;">   
+         </div>   
+        <div id="TRACK_0_png_999_w" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="近軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:250px;
+                  top:200px;">   
+         </div>
+         <div id="TRACK_1_png_999_w" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="遠軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:350px;
+                  top:200px;">   
+         </div>
+    <div class="text">
+        <p id="pack_999_w" class="f">from mqtt pack</p>   
+        <p id="pack_999_s">from mqtt pack</p>  
+        <div class="clear_fix"></div> 
+    
+        <p id=DATA_2_999_w class="f">train speed</p>      
+        <p id="DATA_2_999_s" >train speed</p>   
+        <div class="clear_fix"></div>
+    
+        <p id=TRACK0_1_999_w class="f">TRACK0_1</p>       
+        <p id="TRACK0_1_999_s">TRACK0_1</p>    
+        <div class="clear_fix"></div>
+    
+        <br>
+    
+        <p id="TrainPass_999_w" class="f">object pass</p>             
+        <p id="TrainPass_999_s" >object pass</p>   
+        <div class="clear_fix"></div> 
+    
+        <p id="ALARM_999_w" class="f">train pass alarm</p>            
+        <p id=ALARM_999_s>train pass alarm</p>  
+        <div class="clear_fix"></div> 
+    
+        <p id="time_999_w" class="f">last update time</p>             
+        <p id=time_999_s>last update time</p>   
+        <div class="clear_fix"></div> 
+    </div>
+    <HR>
+    <!-- ------------------------------------------------------------------------------- -->
+    <div><h3>鶯歌(Group002)</h3></div>
+    <script>
+        var WS;
+        var track_blink;
+        socket.on('WS_002', function(data) {
+            WS=`${data.message}`;
+        });
+        socket.on('mqtt_002', function(data) {
+            //console.log(data.message);
+            var pack=document.getElementById("device");
+            if(WS==0){
+                pack.textContent=document.getElementById('pack_002_s').innerText = `${data.message}`;
+                document.getElementById('pack_002_s').innerText = `${data.message}`;
+            }
+            else{
+                pack.textContent=document.getElementById('pack_002_w').innerText = `${data.message}`;
+                document.getElementById('pack_002_w').innerText = `${data.message}`;
+            }
+
+        });
+        socket.on('time_002', function(data) {
+            if(WS==0){
+                var time=document.getElementById('time_002_s');
+                time.innerText = `${data.message}`;
+            }
+            else{
+                var time=document.getElementById('time_002_w');
+                time.innerText = `${data.message}`;
+            }
+        });
+        socket.on('DATA_2_002', function(data) {
+            //console.log(data.message);
+            if(WS==0){
+                document.getElementById('DATA_2_002_s').innerText = `${data.message}`;
+            }
+            else{
+                document.getElementById('DATA_2_002_w').innerText = `${data.message}`;
+            } 
+        });
+        socket.on('TrainPass_002', function(data) {
+            if(WS==0){
+                var trainpass=document.getElementById('TrainPass_002_s');
+                if(data.message==1){
+                    trainpass.innerText =`物體通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無物體通過`;
+                    trainpass.className="f";
+                    track_blink=0;
+                }
+            }
+            else{
+                var trainpass=document.getElementById('TrainPass_002_w');
+                if(data.message==1){
+                    trainpass.innerText =`物體通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無物體通過`;
+                    trainpass.className="f";
+                    track_blink=0;
+                }
+            }          
+        });
+        socket.on('TRACK0_1_002', function(data) {
+            if(WS==0){
+                if(data.message==1){
+                    document.getElementById('TRACK0_1_002_s').innerText = `遠軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_1_png_002_s').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_1_png_002_s').className="";
+                    }   
+                }  
+                else if(data.message==0){
+                    document.getElementById('TRACK0_1_002_s').innerText = `近軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_0_png_002_s').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_0_png_002_s').className="";
+                    }  
+                } 
+            }
+            else{
+                if(data.message==1){
+                    document.getElementById('TRACK0_1_002_w').innerText = `遠軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_1_png_002_w').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_1_png_002_w').className="";
+                    }  
+                }  
+                else if(data.message==0){
+                    document.getElementById('TRACK0_1_002_w').innerText = `近軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_0_png_002_w').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_0_png_002_w').className="";
+                    }  
+                } 
+            }    
+        });
+        socket.on('ALARM_002', function(data) {
+
+            if(WS==0){
+                var trainpass=document.getElementById('ALARM_002_s');
+                if(data.message==1){
+                    trainpass.innerText =`列車通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無列車通過`;
+                    track_blink=0;
+                    trainpass.className="f";
+                }
+            }
+            else{
+                var trainpass=document.getElementById('ALARM_002_w');
+                if(data.message==1){
+                    trainpass.innerText =`列車通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無列車通過`;
+                    track_blink=0;
+                    trainpass.className="f";
+                }
+            } 
+        });
+    </script>
+        <div id="TRACK_0_png_002_s" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="近軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:1000px;
+                  top:600px;">   
+         </div>
+         <div id="TRACK_1_png_002_s" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="近軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:1100px;
+                  top:600px;">   
+         </div>   
+        <div id="TRACK_0_png_002_w" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="近軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:250px;
+                  top:600px;">   
+         </div>
+         <div id="TRACK_1_png_002_w" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="遠軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:350px;
+                  top:600px;">   
+         </div>
+    <div class="text">
+        <p id="pack_002_w" class="f">from mqtt pack</p>   
+        <p id="pack_002_s">from mqtt pack</p>  
+        <div class="clear_fix"></div> 
+    
+        <p id=DATA_2_002_w class="f">train speed</p>      
+        <p id="DATA_2_002_s" >train speed</p>   
+        <div class="clear_fix"></div>
+    
+        <p id=TRACK0_1_002_w class="f">TRACK0_1</p>       
+        <p id="TRACK0_1_002_s">TRACK0_1</p>    
+        <div class="clear_fix"></div>
+    
+        <br>
+    
+        <p id="TrainPass_002_w" class="f">object pass</p>             
+        <p id="TrainPass_002_s" >object pass</p>   
+        <div class="clear_fix"></div> 
+    
+        <p id="ALARM_002_w" class="f">train pass alarm</p>            
+        <p id=ALARM_002_s>train pass alarm</p>  
+        <div class="clear_fix"></div> 
+    
+        <p id="time_002_w" class="f">last update time</p>             
+        <p id=time_002_s>last update time</p>   
+        <div class="clear_fix"></div> 
+    </div>
+    <HR>
+    <!-- ------------------------------------------------------------------------------- -->
+    <div><h3>嘉義(Group004)</h3></div>
+    <script>
+        var WS;
+        var track_blink;
+        socket.on('WS_004', function(data) {
+            WS=`${data.message}`;
+        });
+        socket.on('mqtt_004', function(data) {
+            //console.log(data.message);
+            var pack=document.getElementById("device");
+            if(WS==0){
+                pack.textContent=document.getElementById('pack_004_s').innerText = `${data.message}`;
+                document.getElementById('pack_004_s').innerText = `${data.message}`;
+            }
+            else{
+                pack.textContent=document.getElementById('pack_004_w').innerText = `${data.message}`;
+                document.getElementById('pack_004_w').innerText = `${data.message}`;
+            }
+
+        });
+        socket.on('time_004', function(data) {
+            if(WS==0){
+                var time=document.getElementById('time_004_s');
+                time.innerText = `${data.message}`;
+            }
+            else{
+                var time=document.getElementById('time_004_w');
+                time.innerText = `${data.message}`;
+            }
+        });
+        socket.on('DATA_2_004', function(data) {
+            //console.log(data.message);
+            if(WS==0){
+                document.getElementById('DATA_2_004_s').innerText = `${data.message}`;
+            }
+            else{
+                document.getElementById('DATA_2_004_w').innerText = `${data.message}`;
+            } 
+        });
+        socket.on('TrainPass_004', function(data) {
+            if(WS==0){
+                var trainpass=document.getElementById('TrainPass_004_s');
+                if(data.message==1){
+                    trainpass.innerText =`物體通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無物體通過`;
+                    trainpass.className="f";
+                    track_blink=0;
+                }
+            }
+            else{
+                var trainpass=document.getElementById('TrainPass_004_w');
+                if(data.message==1){
+                    trainpass.innerText =`物體通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無物體通過`;
+                    trainpass.className="f";
+                    track_blink=0;
+                }
+            }          
+        });
+        socket.on('TRACK0_1_004', function(data) {
+            if(WS==0){
+                if(data.message==1){
+                    document.getElementById('TRACK0_1_004_s').innerText = `遠軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_1_png_004_s').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_1_png_004_s').className="";
+                    }   
+                }  
+                else if(data.message==0){
+                    document.getElementById('TRACK0_1_004_s').innerText = `近軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_0_png_004_s').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_0_png_004_s').className="";
+                    }  
+                } 
+            }
+            else if(data.message==0){
+                if(data.message==1){
+                    document.getElementById('TRACK0_1_004_w').innerText = `遠軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_1_png_004_w').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_1_png_004_w').className="";
+                    }  
+                }  
+                else{
+                    document.getElementById('TRACK0_1_004_w').innerText = `近軌`;
+                    if(track_blink){
+                        document.getElementById('TRACK_0_png_004_w').className="blinkpng";
+                    }
+                    else{
+                        document.getElementById('TRACK_0_png_004_w').className="";
+                    }  
+                } 
+            }    
+        });
+        socket.on('ALARM_004', function(data) {
+
+            if(WS==0){
+                var trainpass=document.getElementById('ALARM_004_s');
+                if(data.message==1){
+                    trainpass.innerText =`列車通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無列車通過`;
+                    track_blink=0;
+                    trainpass.className="f";
+                }
+            }
+            else{
+                var trainpass=document.getElementById('ALARM_004_w');
+                if(data.message==1){
+                    trainpass.innerText =`列車通過!!!`;
+                    trainpass.className="blink";
+                    track_blink=1;
+                }
+                else{
+                    trainpass.innerText =`無列車通過`;
+                    track_blink=0;
+                    trainpass.className="f";
+                }
+            } 
+        });
+    </script>
+        <div id="TRACK_0_png_004_s" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="近軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:1000px;
+                  top:1000px;">   
+         </div>
+         <div id="TRACK_1_png_004_s" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="近軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:1100px;
+                  top:1000px;">   
+         </div>   
+        <div id="TRACK_0_png_004_w" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="近軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:250px;
+                  top:1000px;">   
+         </div>
+         <div id="TRACK_1_png_004_w" ><img src="https://raw.githubusercontent.com/iolbn6505/2018-5-11/master/noun-railway-track-1567494%20(1).png"
+            alt="圖片失效"
+            title="遠軌"
+            style="width:200px;
+                  height:200px;
+                  position:absolute;
+                  left:350px;
+                  top:1000px;">   
+         </div>
+    <div class="text">
+        <p id="pack_004_w" class="f">from mqtt pack</p>   
+        <p id="pack_004_s">from mqtt pack</p>  
+        <div class="clear_fix"></div> 
+    
+        <p id=DATA_2_004_w class="f">train speed</p>      
+        <p id="DATA_2_004_s" >train speed</p>   
+        <div class="clear_fix"></div>
+    
+        <p id=TRACK0_1_004_w class="f">TRACK0_1</p>       
+        <p id="TRACK0_1_004_s">TRACK0_1</p>    
+        <div class="clear_fix"></div>
+    
+        <br>
+    
+        <p id="TrainPass_004_w" class="f">object pass</p>             
+        <p id="TrainPass_004_s" >object pass</p>   
+        <div class="clear_fix"></div> 
+    
+        <p id="ALARM_004_w" class="f">train pass alarm</p>            
+        <p id=ALARM_004_s>train pass alarm</p>  
+        <div class="clear_fix"></div> 
+    
+        <p id="time_004_w" class="f">last update time</p>             
+        <p id=time_004_s>last update time</p>   
+        <div class="clear_fix"></div> 
+    </div>
+    <HR>
+    <!-- ------------------------------------------------------------------------------- -->
+    </div>
+</body>
+
+</html>
